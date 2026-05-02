@@ -14,3 +14,8 @@
 - Files changed: `app/src/main/java/com/neverno/neverq/customer/orders/OrderDetailScreen.kt`
 - What was done: Rebuilt order detail with a CfNavy top app bar, colored status card, white items card, and payment summary card for subtotal, wallet used, coupon discount, and total.
 - Issues found: None.
+
+## Customer profile improvement
+- Files changed: `app/src/main/java/com/neverno/neverq/customer/ProfileViewModel.kt`, `app/src/main/java/com/neverno/neverq/customer/CustomerShell.kt`
+- What was done: Added a dedicated ProfileViewModel that reads stored user name, email, and company ID from TokenManager flows, enriches company name from the profile API when available, and preserves logout navigation.
+- Issues found: TokenManager stores company ID but not company name, so the screen falls back to company ID if the profile API cannot provide a name.
