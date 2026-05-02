@@ -42,10 +42,10 @@ class MainActivity : ComponentActivity() {
                                 SyncWorker.schedule(applicationContext, userType, role)
                             }
                             when {
-                                userType == "customer" -> "customer_home"
+                                userType == "customer" -> "customer"
                                 role == "cafeman" -> "kitchen"
                                 role == "pos" -> "pos"
-                                else -> "admin_dashboard"
+                                else -> "admin"
                             }
                         }
                     }

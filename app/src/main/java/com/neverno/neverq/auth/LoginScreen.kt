@@ -2,14 +2,12 @@ package com.neverno.neverq.auth
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,18 +34,22 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    // false = Customer login, true = Staff login
+    var isStaffMode by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.navigateTo) {
         uiState.navigateTo?.let { onNavigateTo(it) }
     }
 
-    // Dark navy gradient background — matches web login
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 Brush.linearGradient(
-                    colors = listOf(Color(0xFF0D1B2A), Color(0xFF15233B), Color(0xFF173B93))
+                    colors = if (isStaffMode)
+                        listOf(Color(0xFF0D1B4B), Color(0xFF1A237E), Color(0xFF1565C0))
+                    else
+                        listOf(Color(0xFF0D1B2E), Color(0xFF15233B), Color(0xFF1A4D91))
                 )
             ),
         contentAlignment = Alignment.Center,
@@ -58,88 +60,112 @@ fun LoginScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // ── Brand header ─────────────────────────────────────────────────
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(24.dp))
+
+            // ── Brand ────────────────────────────────────────────────────────
             Text(
                 text = "NeverQ",
-                fontSize = 42.sp,
+                fontSize = 44.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
                 letterSpacing = 1.sp,
             )
             Text(
-                text = "Corporate Cafeteria",
-                fontSize = 13.sp,
+                text = if (isStaffMode) "STAFF PORTAL" else "POWERED BY NEVERNO",
+                fontSize = 11.sp,
                 color = Color.White.copy(alpha = 0.6f),
                 letterSpacing = 2.sp,
             )
-            Spacer(Modifier.height(32.dp))
+
+            Spacer(Modifier.height(24.dp))
+
+            // ── Mode toggle ──────────────────────────────────────────────────
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.White.copy(alpha = 0.12f))
+                    .padding(4.dp),
+            ) {
+                ModeTab(
+                    label = "Customer",
+                    icon = Icons.Default.Person,
+                    selected = !isStaffMode,
+                    onClick = { isStaffMode = false; viewModel.clearError() },
+                )
+                ModeTab(
+                    label = "Staff",
+                    icon = Icons.Default.Badge,
+                    selected = isStaffMode,
+                    onClick = { isStaffMode = true; viewModel.clearError() },
+                )
+            }
+
+            Spacer(Modifier.height(20.dp))
 
             // ── Login card ───────────────────────────────────────────────────
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
             ) {
                 Column(
-                    modifier = Modifier.padding(28.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 28.dp),
+                    verticalArrangement = Arrangement.spacedBy(0.dp),
                 ) {
+                    // Heading
                     Text(
-                        text = "Sign in to your account",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        text = if (isStaffMode) "Staff Sign In" else "Sign In",
+                        fontSize = if (isStaffMode) 20.sp else 26.sp,
+                        fontWeight = FontWeight.Bold,
                         color = CfNavy,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth(),
                     )
                     Text(
-                        text = "Works for staff and customer logins",
+                        text = if (isStaffMode)
+                            "Use your staff email and password"
+                        else
+                            "Use your registered email to continue",
                         fontSize = 12.sp,
                         color = CfMuted,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 20.dp),
                     )
 
-                    Spacer(Modifier.height(4.dp))
-
-                    // Email field
+                    // Email
+                    LoginFieldLabel("Email Address")
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text("Email address") },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Default.Email,
-                                contentDescription = null,
-                                tint = CfBlue,
-                            )
-                        },
+                        placeholder = { Text("your@email.com", color = CfMuted, fontSize = 14.sp) },
+                        leadingIcon = { Icon(Icons.Default.Email, null, tint = CfMuted) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = CfBlue,
-                            focusedLabelColor = CfBlue,
+                            unfocusedBorderColor = CfBorder,
+                            focusedContainerColor = Color(0xFFF8FAFC),
+                            unfocusedContainerColor = Color(0xFFF8FAFC),
                         ),
                     )
 
-                    // Password field
+                    Spacer(Modifier.height(12.dp))
+
+                    // Password
+                    LoginFieldLabel("Password")
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text("Password") },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Default.Lock,
-                                contentDescription = null,
-                                tint = CfBlue,
-                            )
-                        },
+                        placeholder = { Text("••••••••", color = CfMuted, fontSize = 14.sp) },
+                        leadingIcon = { Icon(Icons.Default.Lock, null, tint = CfMuted) },
                         trailingIcon = {
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Icon(
-                                    if (passwordVisible) Icons.Default.VisibilityOff
-                                    else Icons.Default.Visibility,
-                                    contentDescription = null,
+                                    if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    null,
                                     tint = CfMuted,
                                 )
                             }
@@ -152,86 +178,141 @@ fun LoginScreen(
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = CfBlue,
-                            focusedLabelColor = CfBlue,
+                            unfocusedBorderColor = CfBorder,
+                            focusedContainerColor = Color(0xFFF8FAFC),
+                            unfocusedContainerColor = Color(0xFFF8FAFC),
                         ),
                     )
 
-                    // Error
-                    AnimatedVisibility(visible = uiState.error != null) {
+                    // Error box
+                    AnimatedVisibility(
+                        visible = uiState.error != null,
+                        modifier = Modifier.padding(top = 12.dp),
+                    ) {
                         uiState.error?.let { error ->
-                            Card(
-                                colors = CardDefaults.cardColors(containerColor = CfRedLight),
-                                shape = RoundedCornerShape(10.dp),
-                                modifier = Modifier.fillMaxWidth(),
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(CfRedLight)
+                                    .padding(12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.Top,
                             ) {
-                                Text(
-                                    text = error,
-                                    color = CfRed,
-                                    modifier = Modifier.padding(12.dp),
-                                    fontSize = 13.sp,
-                                )
+                                Icon(Icons.Default.ErrorOutline, null, tint = CfRed, modifier = Modifier.size(18.dp).padding(top = 1.dp))
+                                Text(error, color = CfRed, fontSize = 13.sp, modifier = Modifier.weight(1f))
                             }
                         }
                     }
+
+                    // Google-only notice for customer mode
+                    if (!isStaffMode) {
+                        AnimatedVisibility(visible = true) {
+                            Text(
+                                text = "Note: If you signed up with Google, use email/password login requires a password set in your account.",
+                                fontSize = 11.sp,
+                                color = CfMuted,
+                                modifier = Modifier.padding(top = 10.dp),
+                                lineHeight = 15.sp,
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(20.dp))
 
                     // Sign in button
                     Button(
                         onClick = { viewModel.login(email, password) },
                         enabled = !uiState.isLoading && email.isNotBlank() && password.isNotBlank(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = CfBlue),
+                        modifier = Modifier.fillMaxWidth().height(52.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isStaffMode) CfNavy else CfBlue,
+                        ),
                     ) {
                         if (uiState.isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(22.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp,
-                            )
+                            CircularProgressIndicator(modifier = Modifier.size(22.dp), color = Color.White, strokeWidth = 2.dp)
                         } else {
-                            Text(
-                                "Sign In",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                letterSpacing = 0.5.sp,
-                            )
+                            Icon(Icons.Default.Login, null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Sign In", fontSize = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
                         }
                     }
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
-
-            // Role hint
+            // ── Switch mode hint at bottom ───────────────────────────────────
+            Spacer(Modifier.height(20.dp))
             Row(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(999.dp))
+                    .clip(RoundedCornerShape(12.dp))
                     .background(Color.White.copy(alpha = 0.1f))
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .clickable { isStaffMode = !isStaffMode; viewModel.clearError() },
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                RolePill("Customer")
-                RolePill("Kitchen")
-                RolePill("POS")
-                RolePill("Admin")
+                Icon(
+                    if (isStaffMode) Icons.Default.Person else Icons.Default.Badge,
+                    null,
+                    tint = Color.White.copy(alpha = 0.8f),
+                    modifier = Modifier.size(16.dp),
+                )
+                Text(
+                    text = if (isStaffMode) "Back to Customer Portal" else "Neverno Staff Sign In",
+                    fontSize = 13.sp,
+                    color = Color.White.copy(alpha = 0.85f),
+                    fontWeight = FontWeight.Medium,
+                )
             }
+            Spacer(Modifier.height(24.dp))
         }
     }
 }
 
 @Composable
-private fun RolePill(label: String) {
-    Text(
-        text = label,
-        fontSize = 11.sp,
-        color = Color.White.copy(alpha = 0.75f),
-        fontWeight = FontWeight.Medium,
+private fun ModeTab(
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(999.dp))
-            .background(Color.White.copy(alpha = 0.12f))
-            .padding(horizontal = 10.dp, vertical = 4.dp),
+            .clip(RoundedCornerShape(8.dp))
+            .background(if (selected) Color.White else Color.Transparent)
+            .clickable { onClick() }
+            .padding(horizontal = 18.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Icon(
+                icon,
+                null,
+                tint = if (selected) CfNavy else Color.White.copy(alpha = 0.7f),
+                modifier = Modifier.size(16.dp),
+            )
+            Text(
+                label,
+                fontSize = 13.sp,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                color = if (selected) CfNavy else Color.White.copy(alpha = 0.7f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun LoginFieldLabel(text: String) {
+    Text(
+        text = text,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color(0xFF4B5563),
+        letterSpacing = 0.5.sp,
+        modifier = Modifier.padding(bottom = 5.dp),
     )
 }

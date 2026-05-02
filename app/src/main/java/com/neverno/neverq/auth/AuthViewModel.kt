@@ -44,10 +44,10 @@ class AuthViewModel @Inject constructor(private val repo: AuthRepository) : View
     }
 
     private fun routeForRole(userType: String, role: String): String = when {
-        userType == "customer" -> "customer_home"
+        userType == "customer" -> "customer"
         role == "cafeman" -> "kitchen"
         role == "pos" -> "pos"
-        role in listOf("admin", "superadmin") -> "admin_dashboard"
-        else -> "admin_dashboard"
+        role in listOf("admin", "superadmin") -> "admin"
+        else -> "admin"
     }
 }
