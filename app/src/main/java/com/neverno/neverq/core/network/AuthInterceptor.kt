@@ -11,6 +11,11 @@ import javax.inject.Singleton
 @Singleton
 class AuthInterceptor @Inject constructor(private val tokenManager: TokenManager) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
+        val path = chain.request().url.encodedPath
+        if (path.contains("/auth/login/") || path.contains("/auth/token/refresh/")) {
+            return chain.proceed(chain.request())
+        }
+
         val token = runBlocking { tokenManager.getAccessTokenNow() }
         val request = chain.request().newBuilder().apply {
             if (token != null) header("Authorization", "Bearer $token")
@@ -26,6 +31,11 @@ class TokenRefreshInterceptor @Inject constructor(
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val response = chain.proceed(chain.request())
+        val path = chain.request().url.encodedPath
+        if (path.contains("/auth/login/") || path.contains("/auth/token/refresh/")) {
+            return response
+        }
+
         if (response.code == 401) {
             response.close()
             val newToken = runBlocking {

@@ -44,3 +44,8 @@
 - Files changed: `app/src/main/java/com/neverno/neverq/auth/LoginScreen.kt`, `app/src/main/java/com/neverno/neverq/MainActivity.kt`
 - What was done: Removed the external browser handoff from the customer Google button, added an in-app explanation dialog, moved password sign-in above Google, made the login form scroll/keyboard safe, and normalized saved role routing on app startup.
 - Issues found: The live Google OAuth flow is web-session based and redirects to the website; native Android Google login still requires an Android OAuth client plus a NeverQ API endpoint that returns app access/refresh tokens.
+
+## Customer login fix
+- Files changed: `app/src/main/java/com/neverno/neverq/core/models/ApiModels.kt`, `app/src/main/java/com/neverno/neverq/auth/AuthRepository.kt`, `app/src/main/java/com/neverno/neverq/auth/AuthViewModel.kt`, `app/src/main/java/com/neverno/neverq/auth/LoginScreen.kt`, `app/src/main/java/com/neverno/neverq/core/network/AuthInterceptor.kt`
+- What was done: Customer login now sends `user_type = "customer"`, login response parsing tolerates missing/null customer role fields, routing falls back to the selected login mode, API error details are surfaced, and auth/refresh interceptors no longer attach stale bearer tokens or refresh around login calls.
+- Issues found: Could not verify with real customer credentials locally, but invalid-login API checks confirmed the backend accepts the `user_type` field.

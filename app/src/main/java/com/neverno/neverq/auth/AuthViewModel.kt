@@ -20,16 +20,19 @@ class AuthViewModel @Inject constructor(private val repo: AuthRepository) : View
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState
 
-    fun login(email: String, password: String) {
+    fun login(email: String, password: String, userType: String) {
         if (email.isBlank() || password.isBlank()) {
             _uiState.value = LoginUiState(error = "Email and password are required.")
             return
         }
         viewModelScope.launch {
             _uiState.value = LoginUiState(isLoading = true)
-            when (val result = repo.login(email, password)) {
+            when (val result = repo.login(email, password, userType)) {
                 is AuthResult.Success -> {
-                    val route = routeForRole(result.response.userType, result.response.role)
+                    val route = routeForRole(
+                        userType = result.response.userType.ifBlank { userType },
+                        role = result.response.role,
+                    )
                     _uiState.value = LoginUiState(navigateTo = route)
                 }
                 is AuthResult.Error -> {
@@ -43,9 +46,9 @@ class AuthViewModel @Inject constructor(private val repo: AuthRepository) : View
         _uiState.value = _uiState.value.copy(error = null)
     }
 
-    private fun routeForRole(userType: String, role: String): String {
-        val normalizedUserType = userType.trim().lowercase()
-        val normalizedRole = role.trim().lowercase()
+    private fun routeForRole(userType: String?, role: String?): String {
+        val normalizedUserType = userType.orEmpty().trim().lowercase()
+        val normalizedRole = role.orEmpty().trim().lowercase()
 
         return when {
             normalizedUserType == "customer" || normalizedRole == "customer" -> "customer"

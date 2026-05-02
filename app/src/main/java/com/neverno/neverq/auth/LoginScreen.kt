@@ -232,7 +232,13 @@ fun LoginScreen(
                     Spacer(Modifier.height(20.dp))
 
                     Button(
-                        onClick = { viewModel.login(email, password) },
+                        onClick = {
+                            viewModel.login(
+                                email = email,
+                                password = password,
+                                userType = if (isStaffMode) "staff" else "customer",
+                            )
+                        },
                         enabled = !uiState.isLoading && email.isNotBlank() && password.isNotBlank(),
                         modifier = Modifier.fillMaxWidth().height(52.dp),
                         shape = RoundedCornerShape(14.dp),
