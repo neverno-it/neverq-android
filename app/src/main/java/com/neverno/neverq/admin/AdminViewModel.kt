@@ -15,6 +15,10 @@ data class AdminUiState(
     val stats: DashboardStats? = null,
     val weeklyRevenue: List<WeeklyRevenue> = emptyList(),
     val orders: List<OrderListItem> = emptyList(),
+    val categories: List<Category> = emptyList(),
+    val products: List<Product> = emptyList(),
+    val staff: List<StaffUser> = emptyList(),
+    val coupons: List<Coupon> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val navigateTo: String? = null,
@@ -73,6 +77,53 @@ class AdminViewModel @Inject constructor(
                 api.updateAdminOrderStatus(orderId, UpdateStatusRequest(newStatus))
                 loadOrders()
             } catch (_: Exception) {}
+        }
+    }
+
+    fun loadCatalog(categoryId: Int? = null) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            try {
+                val categoriesResponse = api.getAdminCategories()
+                val productsResponse = api.getAdminProducts(categoryId)
+                _uiState.value = _uiState.value.copy(
+                    categories = categoriesResponse.body() ?: emptyList(),
+                    products = productsResponse.body() ?: emptyList(),
+                    isLoading = false,
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.localizedMessage)
+            }
+        }
+    }
+
+    fun loadStaff() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            try {
+                val response = api.getStaff()
+                _uiState.value = _uiState.value.copy(
+                    staff = response.body() ?: emptyList(),
+                    isLoading = false,
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.localizedMessage)
+            }
+        }
+    }
+
+    fun loadCoupons() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            try {
+                val response = api.getCoupons()
+                _uiState.value = _uiState.value.copy(
+                    coupons = response.body() ?: emptyList(),
+                    isLoading = false,
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.localizedMessage)
+            }
         }
     }
 

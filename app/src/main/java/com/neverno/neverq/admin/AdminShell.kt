@@ -47,6 +47,39 @@ fun AdminShell(onLogout: () -> Unit) {
                         }
                     }
                 )
+                AdminNavItem(
+                    icon = Icons.Default.RestaurantMenu,
+                    label = "Catalog",
+                    selected = currentRoute == "catalog",
+                    onClick = {
+                        navController.navigate("catalog") {
+                            popUpTo("dashboard")
+                            launchSingleTop = true
+                        }
+                    }
+                )
+                AdminNavItem(
+                    icon = Icons.Default.People,
+                    label = "Staff",
+                    selected = currentRoute == "staff",
+                    onClick = {
+                        navController.navigate("staff") {
+                            popUpTo("dashboard")
+                            launchSingleTop = true
+                        }
+                    }
+                )
+                AdminNavItem(
+                    icon = Icons.Default.LocalOffer,
+                    label = "Coupons",
+                    selected = currentRoute == "coupons",
+                    onClick = {
+                        navController.navigate("coupons") {
+                            popUpTo("dashboard")
+                            launchSingleTop = true
+                        }
+                    }
+                )
             }
         },
         containerColor = CfSurface,
@@ -61,6 +94,15 @@ fun AdminShell(onLogout: () -> Unit) {
                 }
                 composable("orders") {
                     AdminOrdersScreen(onBack = { navController.popBackStack() })
+                }
+                composable("catalog") {
+                    AdminCatalogScreen()
+                }
+                composable("staff") {
+                    AdminStaffScreen()
+                }
+                composable("coupons") {
+                    AdminCouponsScreen()
                 }
             }
         }
@@ -79,7 +121,7 @@ private fun RowScope.AdminNavItem(
         label = {
             Text(
                 label,
-                fontSize = 11.sp,
+                fontSize = 10.sp,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             )
         },

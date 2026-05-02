@@ -29,3 +29,8 @@
 - Files changed: `app/src/main/java/com/neverno/neverq/auth/LoginScreen.kt`, `app/src/main/java/com/neverno/neverq/auth/AuthViewModel.kt`
 - What was done: Added a visible customer `Continue with Google` action that opens the live web Google login route and made password-login routing tolerate case/role aliases for customer, kitchen, POS, and admin users.
 - Issues found: The Android Firebase config has no OAuth client and the API does not expose a mobile Google token endpoint, so native in-app Google token login still needs backend/config work.
+
+## Admin menu expansion
+- Files changed: `app/src/main/java/com/neverno/neverq/admin/AdminShell.kt`, `app/src/main/java/com/neverno/neverq/admin/AdminViewModel.kt`, `app/src/main/java/com/neverno/neverq/admin/AdminCatalogScreen.kt`, `app/src/main/java/com/neverno/neverq/admin/AdminStaffScreen.kt`, `app/src/main/java/com/neverno/neverq/admin/AdminCouponsScreen.kt`
+- What was done: Expanded admin bottom navigation from Dashboard/Orders to Dashboard, Orders, Catalog, Staff, and Coupons; added API-backed catalog, staff, and coupon list screens with brand styling.
+- Issues found: Current API exposes admin listing endpoints for products, categories, staff, and coupons but not create/edit/delete endpoints in the Android client yet, so these screens are read-only for now.
