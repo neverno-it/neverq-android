@@ -34,3 +34,8 @@
 - Files changed: `app/src/main/java/com/neverno/neverq/admin/AdminShell.kt`, `app/src/main/java/com/neverno/neverq/admin/AdminViewModel.kt`, `app/src/main/java/com/neverno/neverq/admin/AdminCatalogScreen.kt`, `app/src/main/java/com/neverno/neverq/admin/AdminStaffScreen.kt`, `app/src/main/java/com/neverno/neverq/admin/AdminCouponsScreen.kt`
 - What was done: Expanded admin bottom navigation from Dashboard/Orders to Dashboard, Orders, Catalog, Staff, and Coupons; added API-backed catalog, staff, and coupon list screens with brand styling.
 - Issues found: Current API exposes admin listing endpoints for products, categories, staff, and coupons but not create/edit/delete endpoints in the Android client yet, so these screens are read-only for now.
+
+## Customer menu submenu support
+- Files changed: `app/src/main/java/com/neverno/neverq/customer/menu/CustomerHomeScreen.kt`
+- What was done: Added parent category filtering and child submenu chips using the category `parentId` field, while keeping veg-only filtering available as its own chip row.
+- Issues found: None.

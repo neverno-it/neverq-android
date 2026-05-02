@@ -32,7 +32,8 @@ fun CustomerHomeScreen(
     viewModel: CustomerMenuViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var selectedCategoryId by remember { mutableStateOf<Int?>(null) }
+    var selectedParentCategoryId by remember { mutableStateOf<Int?>(null) }
+    var selectedChildCategoryId by remember { mutableStateOf<Int?>(null) }
     var vegOnly by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     var showLogoutDialog by remember { mutableStateOf(false) }
@@ -41,8 +42,22 @@ fun CustomerHomeScreen(
         if (uiState.navigateTo == "login") onLogout()
     }
 
+    val rootCategories = uiState.categories.filter { it.parentId == null }
+    val parentCategories = rootCategories.ifEmpty { uiState.categories }
+    val childCategories = selectedParentCategoryId?.let { parentId ->
+        uiState.categories.filter { it.parentId == parentId }
+    }.orEmpty()
+    val selectedCategoryIds = when {
+        selectedChildCategoryId != null -> setOf(selectedChildCategoryId!!)
+        selectedParentCategoryId != null -> buildSet {
+            add(selectedParentCategoryId!!)
+            addAll(childCategories.map { it.id })
+        }
+        else -> null
+    }
+
     val filteredProducts = uiState.products.filter { p ->
-        (selectedCategoryId == null || p.categoryId == selectedCategoryId) &&
+        (selectedCategoryIds == null || p.categoryId in selectedCategoryIds) &&
         (!vegOnly || p.isVeg) &&
         (searchQuery.isBlank() || p.name.contains(searchQuery, ignoreCase = true))
     }
@@ -139,8 +154,11 @@ fun CustomerHomeScreen(
             ) {
                 item {
                     FilterChip(
-                        selected = selectedCategoryId == null,
-                        onClick = { selectedCategoryId = null },
+                        selected = selectedParentCategoryId == null,
+                        onClick = {
+                            selectedParentCategoryId = null
+                            selectedChildCategoryId = null
+                        },
                         label = { Text("All", fontSize = 13.sp) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = CfBlue,
@@ -148,10 +166,13 @@ fun CustomerHomeScreen(
                         ),
                     )
                 }
-                items(uiState.categories) { cat ->
+                items(parentCategories, key = { it.id }) { cat ->
                     FilterChip(
-                        selected = selectedCategoryId == cat.id,
-                        onClick = { selectedCategoryId = if (selectedCategoryId == cat.id) null else cat.id },
+                        selected = selectedParentCategoryId == cat.id,
+                        onClick = {
+                            selectedParentCategoryId = if (selectedParentCategoryId == cat.id) null else cat.id
+                            selectedChildCategoryId = null
+                        },
                         label = { Text(cat.name, fontSize = 13.sp) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = CfBlue,
@@ -159,6 +180,42 @@ fun CustomerHomeScreen(
                         ),
                     )
                 }
+            }
+
+            if (childCategories.isNotEmpty()) {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                ) {
+                    item {
+                        FilterChip(
+                            selected = selectedChildCategoryId == null,
+                            onClick = { selectedChildCategoryId = null },
+                            label = { Text("All Submenu", fontSize = 13.sp) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = CfNavy,
+                                selectedLabelColor = Color.White,
+                            ),
+                        )
+                    }
+                    items(childCategories, key = { it.id }) { cat ->
+                        FilterChip(
+                            selected = selectedChildCategoryId == cat.id,
+                            onClick = { selectedChildCategoryId = if (selectedChildCategoryId == cat.id) null else cat.id },
+                            label = { Text(cat.name, fontSize = 13.sp) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = CfNavy,
+                                selectedLabelColor = Color.White,
+                            ),
+                        )
+                    }
+                }
+            }
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+            ) {
                 item {
                     FilterChip(
                         selected = vegOnly,
