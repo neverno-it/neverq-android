@@ -39,3 +39,8 @@
 - Files changed: `app/src/main/java/com/neverno/neverq/customer/menu/CustomerHomeScreen.kt`
 - What was done: Added parent category filtering and child submenu chips using the category `parentId` field, while keeping veg-only filtering available as its own chip row.
 - Issues found: None.
+
+## Google auth browser handoff removal
+- Files changed: `app/src/main/java/com/neverno/neverq/auth/LoginScreen.kt`, `app/src/main/java/com/neverno/neverq/MainActivity.kt`
+- What was done: Removed the external browser handoff from the customer Google button, added an in-app explanation dialog, moved password sign-in above Google, made the login form scroll/keyboard safe, and normalized saved role routing on app startup.
+- Issues found: The live Google OAuth flow is web-session based and redirects to the website; native Android Google login still requires an Android OAuth client plus a NeverQ API endpoint that returns app access/refresh tokens.

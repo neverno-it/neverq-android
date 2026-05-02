@@ -31,8 +31,8 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     scope.launch {
                         val isLoggedIn = tokenManager.isLoggedIn()
-                        val userType = tokenManager.getUserTypeNow()
-                        val role = tokenManager.getUserRoleNow()
+                        val userType = tokenManager.getUserTypeNow()?.trim()?.lowercase()
+                        val role = tokenManager.getUserRoleNow()?.trim()?.lowercase()
 
                         startDestination = if (!isLoggedIn) {
                             "login"
@@ -42,9 +42,9 @@ class MainActivity : ComponentActivity() {
                                 SyncWorker.schedule(applicationContext, userType, role)
                             }
                             when {
-                                userType == "customer" -> "customer"
-                                role == "cafeman" -> "kitchen"
-                                role == "pos" -> "pos"
+                                userType == "customer" || role == "customer" -> "customer"
+                                role in listOf("cafeman", "cafe_manager", "kitchen") -> "kitchen"
+                                role in listOf("pos", "cashier") -> "pos"
                                 else -> "admin"
                             }
                         }
