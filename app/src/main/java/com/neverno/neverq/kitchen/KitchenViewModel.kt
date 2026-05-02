@@ -2,6 +2,7 @@ package com.neverno.neverq.kitchen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.neverno.neverq.auth.AuthRepository
 import com.neverno.neverq.core.db.daos.KitchenOrderDao
 import com.neverno.neverq.core.db.entities.CachedKitchenOrder
 import com.neverno.neverq.core.models.KitchenOrder
@@ -21,6 +22,7 @@ data class KitchenUiState(
     val isLoading: Boolean = false,
     val isOffline: Boolean = false,
     val error: String? = null,
+    val navigateTo: String? = null,
 )
 
 @HiltViewModel
@@ -28,6 +30,7 @@ class KitchenViewModel @Inject constructor(
     private val api: ApiService,
     private val dao: KitchenOrderDao,
     private val moshi: Moshi,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(KitchenUiState())
@@ -100,6 +103,13 @@ class KitchenViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(error = "Failed to update: ${e.localizedMessage}")
             }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.logout()
+            _uiState.value = _uiState.value.copy(navigateTo = "login")
         }
     }
 

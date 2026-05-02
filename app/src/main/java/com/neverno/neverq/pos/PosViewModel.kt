@@ -2,6 +2,7 @@ package com.neverno.neverq.pos
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.neverno.neverq.auth.AuthRepository
 import com.neverno.neverq.core.db.daos.PosProductDao
 import com.neverno.neverq.core.db.entities.CachedPosProduct
 import com.neverno.neverq.core.models.*
@@ -23,12 +24,14 @@ data class PosUiState(
     val isOffline: Boolean = false,
     val lastOrder: PosOrder? = null,
     val error: String? = null,
+    val navigateTo: String? = null,
 )
 
 @HiltViewModel
 class PosViewModel @Inject constructor(
     private val api: ApiService,
     private val dao: PosProductDao,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PosUiState())
@@ -124,5 +127,12 @@ class PosViewModel @Inject constructor(
 
     fun dismissReceipt() {
         _uiState.value = _uiState.value.copy(lastOrder = null)
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.logout()
+            _uiState.value = _uiState.value.copy(navigateTo = "login")
+        }
     }
 }

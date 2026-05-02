@@ -2,6 +2,7 @@ package com.neverno.neverq.customer.menu
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.neverno.neverq.auth.AuthRepository
 import com.neverno.neverq.core.models.AddToCartRequest
 import com.neverno.neverq.core.models.Category
 import com.neverno.neverq.core.models.Product
@@ -21,10 +22,14 @@ data class CustomerMenuUiState(
     val cartCount: Int = 0,
     val isLoading: Boolean = false,
     val error: String? = null,
+    val navigateTo: String? = null,
 )
 
 @HiltViewModel
-class CustomerMenuViewModel @Inject constructor(private val api: ApiService) : ViewModel() {
+class CustomerMenuViewModel @Inject constructor(
+    private val api: ApiService,
+    private val authRepository: AuthRepository,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CustomerMenuUiState())
     val uiState: StateFlow<CustomerMenuUiState> = _uiState
@@ -74,6 +79,13 @@ class CustomerMenuViewModel @Inject constructor(private val api: ApiService) : V
                 api.addToCart(AddToCartRequest(productId, 1))
                 _uiState.value = _uiState.value.copy(cartCount = _uiState.value.cartCount + 1)
             } catch (_: Exception) {}
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.logout()
+            _uiState.value = _uiState.value.copy(navigateTo = "login")
         }
     }
 }

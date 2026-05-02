@@ -2,6 +2,7 @@ package com.neverno.neverq.admin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.neverno.neverq.auth.AuthRepository
 import com.neverno.neverq.core.models.*
 import com.neverno.neverq.core.network.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,10 +17,14 @@ data class AdminUiState(
     val orders: List<OrderListItem> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
+    val navigateTo: String? = null,
 )
 
 @HiltViewModel
-class AdminViewModel @Inject constructor(private val api: ApiService) : ViewModel() {
+class AdminViewModel @Inject constructor(
+    private val api: ApiService,
+    private val authRepository: AuthRepository,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AdminUiState())
     val uiState: StateFlow<AdminUiState> = _uiState
@@ -68,6 +73,13 @@ class AdminViewModel @Inject constructor(private val api: ApiService) : ViewMode
                 api.updateAdminOrderStatus(orderId, UpdateStatusRequest(newStatus))
                 loadOrders()
             } catch (_: Exception) {}
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.logout()
+            _uiState.value = _uiState.value.copy(navigateTo = "login")
         }
     }
 }

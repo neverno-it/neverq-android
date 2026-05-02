@@ -18,6 +18,14 @@ import com.neverno.neverq.pos.PosScreen
 
 @Composable
 fun NeverQNavGraph(navController: NavHostController, startDestination: String) {
+
+    // Shared logout action: clear back stack and go to login
+    val onLogout: () -> Unit = {
+        navController.navigate("login") {
+            popUpTo(0) { inclusive = true }
+        }
+    }
+
     NavHost(navController = navController, startDestination = startDestination) {
 
         composable("login") {
@@ -35,6 +43,7 @@ fun NeverQNavGraph(navController: NavHostController, startDestination: String) {
             CustomerHomeScreen(
                 onCartClick = { navController.navigate("cart") },
                 onOrdersClick = { navController.navigate("order_history") },
+                onLogout = onLogout,
             )
         }
 
@@ -68,18 +77,19 @@ fun NeverQNavGraph(navController: NavHostController, startDestination: String) {
 
         // ── Kitchen ───────────────────────────────────────────────────────────
         composable("kitchen") {
-            KitchenScreen()
+            KitchenScreen(onLogout = onLogout)
         }
 
         // ── POS ───────────────────────────────────────────────────────────────
         composable("pos") {
-            PosScreen()
+            PosScreen(onLogout = onLogout)
         }
 
         // ── Admin ─────────────────────────────────────────────────────────────
         composable("admin_dashboard") {
             AdminDashboardScreen(
                 onOrdersClick = { navController.navigate("admin_orders") },
+                onLogout = onLogout,
             )
         }
 

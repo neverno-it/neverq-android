@@ -3,7 +3,6 @@ package com.neverno.neverq.admin
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -13,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -26,9 +24,32 @@ import com.neverno.neverq.ui.theme.*
 @Composable
 fun AdminDashboardScreen(
     onOrdersClick: () -> Unit,
+    onLogout: () -> Unit,
     viewModel: AdminViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showLogoutDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.navigateTo) {
+        if (uiState.navigateTo == "login") onLogout()
+    }
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Sign Out", fontWeight = FontWeight.SemiBold) },
+            text = { Text("Are you sure you want to sign out?") },
+            confirmButton = {
+                Button(
+                    onClick = { showLogoutDialog = false; viewModel.logout() },
+                    colors = ButtonDefaults.buttonColors(containerColor = CfRed),
+                ) { Text("Sign Out") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) { Text("Cancel") }
+            },
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -45,10 +66,11 @@ fun AdminDashboardScreen(
                     IconButton(onClick = { viewModel.loadDashboard() }) {
                         Icon(Icons.Default.Refresh, "Refresh", tint = Color.White)
                     }
+                    IconButton(onClick = { showLogoutDialog = true }) {
+                        Icon(Icons.Default.Logout, "Sign Out", tint = Color.White)
+                    }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = CfNavy,
-                ),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = CfNavy),
             )
         },
         containerColor = CfSurface,
@@ -75,10 +97,7 @@ fun AdminDashboardScreen(
                             )
                         }
                         item {
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                 StatCard(
                                     title = "Today Orders",
                                     value = stats.todayWebOrders.toString(),
@@ -98,10 +117,7 @@ fun AdminDashboardScreen(
                             }
                         }
                         item {
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                 StatCard(
                                     title = "Pending",
                                     value = stats.pendingOrders.toString(),
@@ -121,10 +137,7 @@ fun AdminDashboardScreen(
                             }
                         }
                         item {
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                 StatCard(
                                     title = "POS Orders",
                                     value = stats.todayPosOrders.toString(),
@@ -144,8 +157,7 @@ fun AdminDashboardScreen(
                             }
                         }
 
-                        // Weekly revenue section
-                        uiState.weeklyRevenue?.let { weekly ->
+                        uiState.weeklyRevenue.let { weekly ->
                             if (weekly.isNotEmpty()) {
                                 item {
                                     Spacer(Modifier.height(4.dp))
@@ -167,16 +179,10 @@ fun AdminDashboardScreen(
                                         Column(Modifier.padding(16.dp)) {
                                             weekly.forEach { rev ->
                                                 Row(
-                                                    Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(vertical = 6.dp),
+                                                    Modifier.fillMaxWidth().padding(vertical = 6.dp),
                                                     horizontalArrangement = Arrangement.SpaceBetween,
                                                 ) {
-                                                    Text(
-                                                        rev.date,
-                                                        fontSize = 13.sp,
-                                                        color = CfMuted,
-                                                    )
+                                                    Text(rev.date, fontSize = 13.sp, color = CfMuted)
                                                     Text(
                                                         "₹${rev.revenue}",
                                                         fontSize = 13.sp,
@@ -184,9 +190,7 @@ fun AdminDashboardScreen(
                                                         color = CfNavy,
                                                     )
                                                 }
-                                                if (weekly.last() != rev) {
-                                                    HorizontalDivider(color = CfBorder)
-                                                }
+                                                if (weekly.last() != rev) HorizontalDivider(color = CfBorder)
                                             }
                                         }
                                     }
@@ -198,18 +202,13 @@ fun AdminDashboardScreen(
                             Spacer(Modifier.height(4.dp))
                             Button(
                                 onClick = onOrdersClick,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(50.dp),
+                                modifier = Modifier.fillMaxWidth().height(50.dp),
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = CfNavy),
                             ) {
                                 Icon(Icons.Default.FormatListBulleted, null)
                                 Spacer(Modifier.width(8.dp))
-                                Text(
-                                    "View All Orders",
-                                    fontWeight = FontWeight.SemiBold,
-                                )
+                                Text("View All Orders", fontWeight = FontWeight.SemiBold)
                             }
                         }
                     }
@@ -229,20 +228,16 @@ fun StatCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier
-            .shadow(
-                elevation = 4.dp,
-                shape = RoundedCornerShape(14.dp),
-                ambientColor = CfNavyDeep.copy(alpha = 0.10f),
-            ),
+        modifier = modifier.shadow(
+            elevation = 4.dp,
+            shape = RoundedCornerShape(14.dp),
+            ambientColor = CfNavyDeep.copy(alpha = 0.10f),
+        ),
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Column(
-            Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Box(
                 modifier = Modifier
                     .size(44.dp)
@@ -252,18 +247,8 @@ fun StatCard(
             ) {
                 Icon(icon, null, tint = iconTint, modifier = Modifier.size(22.dp))
             }
-            Text(
-                value,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = CfNavy,
-            )
-            Text(
-                title,
-                fontSize = 12.sp,
-                color = CfMuted,
-                fontWeight = FontWeight.Medium,
-            )
+            Text(value, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = CfNavy)
+            Text(title, fontSize = 12.sp, color = CfMuted, fontWeight = FontWeight.Medium)
         }
     }
 }
