@@ -22,6 +22,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import com.neverno.neverq.customer.cart.CartScreen
 import com.neverno.neverq.customer.menu.CustomerHomeScreen
+import com.neverno.neverq.customer.menu.ProductDetailScreen
 import com.neverno.neverq.customer.orders.OrderDetailScreen
 import com.neverno.neverq.customer.orders.OrderHistoryScreen
 import com.neverno.neverq.ui.theme.*
@@ -50,7 +51,18 @@ fun CustomerShell(onLogout: () -> Unit) {
                     CustomerHomeScreen(
                         onCartClick = { navController.navigate("cart") },
                         onOrdersClick = { navController.navigate("orders") },
+                        onProductClick = { id -> navController.navigate("product_detail/$id") },
                         onLogout = onLogout,
+                    )
+                }
+
+                composable(
+                    "product_detail/{productId}",
+                    arguments = listOf(navArgument("productId") { type = NavType.IntType }),
+                ) {
+                    ProductDetailScreen(
+                        onBack = { navController.popBackStack() },
+                        onProductClick = { id -> navController.navigate("product_detail/$id") },
                     )
                 }
 
@@ -83,7 +95,20 @@ fun CustomerShell(onLogout: () -> Unit) {
                 }
 
                 composable("profile") {
-                    CustomerProfileScreen(onLogout = onLogout)
+                    CustomerProfileScreen(
+                        onOrdersClick = { navController.navigate("orders") },
+                        onWalletClick = { navController.navigate("wallet") },
+                        onNotificationsClick = { navController.navigate("notifications") },
+                        onLogout = onLogout,
+                    )
+                }
+
+                composable("wallet") {
+                    WalletScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable("notifications") {
+                    NotificationsScreen(onBack = { navController.popBackStack() })
                 }
             }
         }
@@ -160,6 +185,9 @@ private fun RowScope.CustomerNavItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomerProfileScreen(
+    onOrdersClick: () -> Unit,
+    onWalletClick: () -> Unit,
+    onNotificationsClick: () -> Unit,
     onLogout: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
@@ -237,6 +265,13 @@ fun CustomerProfileScreen(
                         label = "Company",
                         value = uiState.companyName ?: uiState.companyId?.let { "Company #$it" } ?: "Not available",
                     )
+                    if (uiState.phone.isNotBlank()) {
+                        ProfileInfoRow(
+                            icon = Icons.Default.Phone,
+                            label = "Phone",
+                            value = uiState.phone,
+                        )
+                    }
                 }
             }
 
@@ -248,9 +283,11 @@ fun CustomerProfileScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             ) {
                 Column(Modifier.padding(8.dp)) {
-                    ProfileAction(icon = Icons.Default.ReceiptLong, label = "My Orders", color = CfBlue) {}
+                    ProfileAction(icon = Icons.Default.ReceiptLong, label = "My Orders", color = CfBlue, onClick = onOrdersClick)
                     HorizontalDivider(color = CfBorder, modifier = Modifier.padding(horizontal = 12.dp))
-                    ProfileAction(icon = Icons.Default.AccountBalanceWallet, label = "My Wallet", color = CfGreen) {}
+                    ProfileAction(icon = Icons.Default.AccountBalanceWallet, label = "My Wallet", color = CfGreen, onClick = onWalletClick)
+                    HorizontalDivider(color = CfBorder, modifier = Modifier.padding(horizontal = 12.dp))
+                    ProfileAction(icon = Icons.Default.Notifications, label = "Notifications", color = CfOrange, onClick = onNotificationsClick)
                     HorizontalDivider(color = CfBorder, modifier = Modifier.padding(horizontal = 12.dp))
                     ProfileAction(icon = Icons.Default.Logout, label = "Sign Out", color = CfRed) {
                         showLogoutDialog = true

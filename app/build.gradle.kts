@@ -7,6 +7,10 @@ plugins {
     alias(libs.plugins.google.services)
 }
 
+val googleWebClientId = providers.gradleProperty("GOOGLE_WEB_CLIENT_ID").orNull
+    ?: System.getenv("GOOGLE_WEB_CLIENT_ID")
+    ?: ""
+
 android {
     namespace = "com.neverno.neverq"
     compileSdk = 35
@@ -19,6 +23,7 @@ android {
         versionName = "1.0.0"
 
         buildConfigField("String", "BASE_URL", "\"https://q.neverno.in/api/v1/\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
     }
 
     buildTypes {
@@ -96,6 +101,7 @@ dependencies {
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
+    implementation(libs.play.services.auth)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)

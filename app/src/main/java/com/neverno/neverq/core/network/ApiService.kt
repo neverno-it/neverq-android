@@ -10,6 +10,9 @@ interface ApiService {
     @POST("auth/login/")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
 
+    @POST("auth/google/")
+    suspend fun googleLogin(@Body request: GoogleLoginRequest): Response<LoginResponse>
+
     @POST("auth/token/refresh/")
     suspend fun refreshToken(@Body request: TokenRefreshRequest): Response<TokenRefreshResponse>
 
@@ -28,6 +31,9 @@ interface ApiService {
 
     @GET("customer/menu/")
     suspend fun getMenu(): Response<MenuResponse>
+
+    @GET("customer/products/{id}/")
+    suspend fun getProductDetail(@Path("id") id: Int): Response<ProductDetailResponse>
 
     @GET("customer/cart/")
     suspend fun getCart(): Response<CartResponse>

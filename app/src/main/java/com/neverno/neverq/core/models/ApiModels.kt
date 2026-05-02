@@ -21,10 +21,17 @@ data class LoginResponse(
     val name: String = "",
     val email: String = "",
     @Json(name = "company_id") val companyId: Int? = null,
+    @Json(name = "auth_status") val authStatus: String? = null,
 )
 
 @JsonClass(generateAdapter = true)
 data class TokenRefreshRequest(val refresh: String)
+
+@JsonClass(generateAdapter = true)
+data class GoogleLoginRequest(
+    @Json(name = "id_token") val idToken: String,
+    @Json(name = "customer_id") val customerId: Int? = null,
+)
 
 @JsonClass(generateAdapter = true)
 data class TokenRefreshResponse(val access: String)
@@ -55,6 +62,8 @@ data class Category(
     val slug: String,
     @Json(name = "parent_id") val parentId: Int?,
     @Json(name = "sort_order") val sortOrder: Int,
+    @Json(name = "image_url") val imageUrl: String? = null,
+    @Json(name = "icon_type") val iconType: Int = 0,
 )
 
 @JsonClass(generateAdapter = true)
@@ -70,14 +79,72 @@ data class Product(
     @Json(name = "is_veg") val isVeg: Boolean,
     val calories: Int?,
     @Json(name = "is_available") val isAvailable: Boolean,
+    @Json(name = "display_price") val displayPrice: String = "",
+    @Json(name = "discounted_price") val discountedPrice: String? = null,
+    @Json(name = "max_qty") val maxQty: Int = -1,
+    @Json(name = "food_label") val foodLabel: String = "",
+    @Json(name = "has_offer") val hasOffer: Boolean = false,
+    @Json(name = "offer_title") val offerTitle: String = "",
+    @Json(name = "is_free_meal_eligible") val isFreeMealEligible: Boolean = false,
+)
+
+@JsonClass(generateAdapter = true)
+data class Banner(
+    val id: Int,
+    val name: String = "",
+    @Json(name = "image_url") val imageUrl: String? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class Offering(
+    val id: Int,
+    val name: String,
+    val slug: String = "",
+    @Json(name = "image_url") val imageUrl: String? = null,
+    @Json(name = "is_active") val isActive: Boolean = true,
+)
+
+@JsonClass(generateAdapter = true)
+data class Offer(
+    val id: Int,
+    val title: String,
+    @Json(name = "offer_type") val offerType: String,
+    val value: String,
+    @Json(name = "min_order_value") val minOrderValue: String? = null,
+    @Json(name = "max_discount") val maxDiscount: String? = null,
+    @Json(name = "image_url") val imageUrl: String? = null,
+    @Json(name = "badge_label") val badgeLabel: String = "Offer",
+)
+
+@JsonClass(generateAdapter = true)
+data class Cafe(
+    val id: Int,
+    val name: String,
+    @Json(name = "building_id") val buildingId: Int? = null,
+    @Json(name = "building_name") val buildingName: String? = null,
 )
 
 @JsonClass(generateAdapter = true)
 data class MenuResponse(
     val categories: List<Category>,
     val products: List<Product>,
+    @Json(name = "featured_products") val featuredProducts: List<Product> = emptyList(),
+    val banners: List<Banner> = emptyList(),
+    val offerings: List<Offering> = emptyList(),
+    val offers: List<Offer> = emptyList(),
+    @Json(name = "recent_orders") val recentOrders: List<OrderListItem> = emptyList(),
+    val cafes: List<Cafe> = emptyList(),
+    @Json(name = "selected_cafe_id") val selectedCafeId: Int? = null,
     @Json(name = "is_store_open") val isStoreOpen: Boolean,
     @Json(name = "ordering_status_message") val orderingStatusMessage: String,
+    @Json(name = "store_name") val storeName: String = "",
+    @Json(name = "order_window_label") val orderWindowLabel: String? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class ProductDetailResponse(
+    val product: Product,
+    @Json(name = "similar_products") val similarProducts: List<Product> = emptyList(),
 )
 
 // ── Cart ──────────────────────────────────────────────────────────────────────

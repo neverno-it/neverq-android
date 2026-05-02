@@ -42,8 +42,30 @@ class AuthViewModel @Inject constructor(private val repo: AuthRepository) : View
         }
     }
 
+    fun googleLogin(idToken: String) {
+        if (idToken.isBlank()) {
+            _uiState.value = LoginUiState(error = "Google did not return a sign-in token.")
+            return
+        }
+        viewModelScope.launch {
+            _uiState.value = LoginUiState(isLoading = true)
+            when (val result = repo.googleLogin(idToken)) {
+                is AuthResult.Success -> {
+                    _uiState.value = LoginUiState(navigateTo = "customer")
+                }
+                is AuthResult.Error -> {
+                    _uiState.value = LoginUiState(error = result.message)
+                }
+            }
+        }
+    }
+
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    fun showError(message: String) {
+        _uiState.value = _uiState.value.copy(error = message)
     }
 
     private fun routeForRole(userType: String?, role: String?): String {

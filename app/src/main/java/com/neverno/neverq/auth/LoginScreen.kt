@@ -1,6 +1,8 @@
 package com.neverno.neverq.auth
 
 import androidx.compose.animation.*
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -26,6 +29,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.neverno.neverq.BuildConfig
 import com.neverno.neverq.ui.theme.*
 
 @Composable
@@ -34,33 +41,37 @@ fun LoginScreen(
     viewModel: AuthViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var showGoogleUnavailableDialog by remember { mutableStateOf(false) }
     // false = Customer login, true = Staff login
     var isStaffMode by remember { mutableStateOf(false) }
 
-    LaunchedEffect(uiState.navigateTo) {
-        uiState.navigateTo?.let { onNavigateTo(it) }
+    val googleSignInClient = remember(context) {
+        GoogleSignIn.getClient(
+            context,
+            GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestProfile()
+                .requestIdToken(BuildConfig.GOOGLE_WEB_CLIENT_ID)
+                .build(),
+        )
+    }
+    val googleLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        try {
+            val account = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                .getResult(ApiException::class.java)
+            viewModel.googleLogin(account.idToken.orEmpty())
+        } catch (_: ApiException) {
+            viewModel.clearError()
+        }
     }
 
-    if (showGoogleUnavailableDialog) {
-        AlertDialog(
-            onDismissRequest = { showGoogleUnavailableDialog = false },
-            title = { Text("Google Sign In", fontWeight = FontWeight.SemiBold, color = CfNavy) },
-            text = {
-                Text(
-                    "Native Google sign-in is not connected to the NeverQ Android API yet. Please use email and password in the app for now.",
-                    color = CfText,
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = { showGoogleUnavailableDialog = false }) {
-                    Text("OK", color = CfBlue)
-                }
-            },
-        )
+    LaunchedEffect(uiState.navigateTo) {
+        uiState.navigateTo?.let { onNavigateTo(it) }
     }
 
     Box(
@@ -268,7 +279,14 @@ fun LoginScreen(
                         }
                         Spacer(Modifier.height(16.dp))
                         OutlinedButton(
-                            onClick = { showGoogleUnavailableDialog = true },
+                            onClick = {
+                                if (BuildConfig.GOOGLE_WEB_CLIENT_ID.isBlank()) {
+                                    viewModel.showError("Google sign-in needs GOOGLE_WEB_CLIENT_ID in the Android build.")
+                                } else {
+                                    googleLauncher.launch(googleSignInClient.signInIntent)
+                                }
+                            },
+                            enabled = !uiState.isLoading,
                             modifier = Modifier.fillMaxWidth().height(50.dp),
                             shape = RoundedCornerShape(14.dp),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = CfText),
@@ -278,13 +296,6 @@ fun LoginScreen(
                             Spacer(Modifier.width(8.dp))
                             Text("Continue with Google", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                         }
-                        Text(
-                            text = "Google app sign-in needs an Android OAuth client and a NeverQ API token endpoint before it can log into the app.",
-                            fontSize = 11.sp,
-                            color = CfMuted,
-                            modifier = Modifier.padding(top = 8.dp),
-                            lineHeight = 15.sp,
-                        )
                     }
                 }
             }

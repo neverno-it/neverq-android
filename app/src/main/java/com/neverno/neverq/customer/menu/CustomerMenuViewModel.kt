@@ -4,7 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.neverno.neverq.auth.AuthRepository
 import com.neverno.neverq.core.models.AddToCartRequest
+import com.neverno.neverq.core.models.Banner
+import com.neverno.neverq.core.models.Cafe
 import com.neverno.neverq.core.models.Category
+import com.neverno.neverq.core.models.Offer
+import com.neverno.neverq.core.models.Offering
+import com.neverno.neverq.core.models.OrderListItem
 import com.neverno.neverq.core.models.Product
 import com.neverno.neverq.core.network.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,9 +21,17 @@ import javax.inject.Inject
 data class CustomerMenuUiState(
     val categories: List<Category> = emptyList(),
     val products: List<Product> = emptyList(),
+    val featuredProducts: List<Product> = emptyList(),
+    val banners: List<Banner> = emptyList(),
+    val offerings: List<Offering> = emptyList(),
+    val offers: List<Offer> = emptyList(),
+    val recentOrders: List<OrderListItem> = emptyList(),
+    val cafes: List<Cafe> = emptyList(),
+    val selectedCafeId: Int? = null,
     val isStoreOpen: Boolean = true,
     val statusMessage: String = "",
     val storeName: String = "Menu",
+    val orderWindowLabel: String? = null,
     val cartCount: Int = 0,
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -49,8 +62,17 @@ class CustomerMenuViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(
                         categories = body.categories,
                         products = body.products,
+                        featuredProducts = body.featuredProducts,
+                        banners = body.banners,
+                        offerings = body.offerings,
+                        offers = body.offers,
+                        recentOrders = body.recentOrders,
+                        cafes = body.cafes,
+                        selectedCafeId = body.selectedCafeId,
                         isStoreOpen = body.isStoreOpen,
                         statusMessage = body.orderingStatusMessage,
+                        storeName = body.storeName.ifBlank { _uiState.value.storeName },
+                        orderWindowLabel = body.orderWindowLabel,
                         isLoading = false,
                     )
                 } else {
