@@ -24,3 +24,8 @@
 - Files changed: `app/src/main/java/com/neverno/neverq/customer/cart/CartViewModel.kt`
 - What was done: Verified checkout calls `api.checkout(CheckoutRequest(paymentMode = "cod"))` and stores the returned `orderId` in `placedOrderId` so CartScreen navigates to order detail.
 - Issues found: None.
+
+## Login and Google auth visibility
+- Files changed: `app/src/main/java/com/neverno/neverq/auth/LoginScreen.kt`, `app/src/main/java/com/neverno/neverq/auth/AuthViewModel.kt`
+- What was done: Added a visible customer `Continue with Google` action that opens the live web Google login route and made password-login routing tolerate case/role aliases for customer, kitchen, POS, and admin users.
+- Issues found: The Android Firebase config has no OAuth client and the API does not expose a mobile Google token endpoint, so native in-app Google token login still needs backend/config work.

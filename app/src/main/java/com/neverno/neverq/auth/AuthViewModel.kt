@@ -43,11 +43,17 @@ class AuthViewModel @Inject constructor(private val repo: AuthRepository) : View
         _uiState.value = _uiState.value.copy(error = null)
     }
 
-    private fun routeForRole(userType: String, role: String): String = when {
-        userType == "customer" -> "customer"
-        role == "cafeman" -> "kitchen"
-        role == "pos" -> "pos"
-        role in listOf("admin", "superadmin") -> "admin"
-        else -> "admin"
+    private fun routeForRole(userType: String, role: String): String {
+        val normalizedUserType = userType.trim().lowercase()
+        val normalizedRole = role.trim().lowercase()
+
+        return when {
+            normalizedUserType == "customer" || normalizedRole == "customer" -> "customer"
+            normalizedRole in listOf("cafeman", "cafe_manager", "kitchen") -> "kitchen"
+            normalizedRole in listOf("pos", "cashier") -> "pos"
+            normalizedRole in listOf("admin", "superadmin", "owner", "manager") -> "admin"
+            normalizedUserType in listOf("staff", "admin") -> "admin"
+            else -> "admin"
+        }
     }
 }

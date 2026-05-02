@@ -1,6 +1,9 @@
 package com.neverno.neverq.auth
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -31,6 +35,7 @@ fun LoginScreen(
     viewModel: AuthViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -205,17 +210,43 @@ fun LoginScreen(
                         }
                     }
 
-                    // Google-only notice for customer mode
                     if (!isStaffMode) {
-                        AnimatedVisibility(visible = true) {
-                            Text(
-                                text = "Note: If you signed up with Google, use email/password login requires a password set in your account.",
-                                fontSize = 11.sp,
-                                color = CfMuted,
-                                modifier = Modifier.padding(top = 10.dp),
-                                lineHeight = 15.sp,
-                            )
+                        Spacer(Modifier.height(16.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            HorizontalDivider(modifier = Modifier.weight(1f), color = CfBorder)
+                            Text("or", fontSize = 12.sp, color = CfMuted)
+                            HorizontalDivider(modifier = Modifier.weight(1f), color = CfBorder)
                         }
+                        Spacer(Modifier.height(16.dp))
+                        OutlinedButton(
+                            onClick = {
+                                context.startActivity(
+                                    Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse("https://q.neverno.in/auth/google/login/"),
+                                    )
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = CfText),
+                            border = BorderStroke(1.dp, CfBorder),
+                        ) {
+                            Text("G", color = CfBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Continue with Google", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                        Text(
+                            text = "Native Google sign-in needs an Android OAuth client and API token endpoint. This opens the live web Google login for now.",
+                            fontSize = 11.sp,
+                            color = CfMuted,
+                            modifier = Modifier.padding(top = 8.dp),
+                            lineHeight = 15.sp,
+                        )
                     }
 
                     Spacer(Modifier.height(20.dp))
