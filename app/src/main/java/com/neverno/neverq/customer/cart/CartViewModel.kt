@@ -72,11 +72,11 @@ class CartViewModel @Inject constructor(private val api: ApiService) : ViewModel
         }
     }
 
-    fun checkout(paymentMode: String) {
+    fun checkout() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             try {
-                val response = api.checkout(CheckoutRequest(paymentMode = paymentMode))
+                val response = api.checkout(CheckoutRequest(paymentMode = "cod"))
                 if (response.isSuccessful && response.body() != null) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
