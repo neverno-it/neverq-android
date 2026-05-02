@@ -9,3 +9,8 @@
 - Files changed: `app/src/main/java/com/neverno/neverq/customer/orders/OrderHistoryScreen.kt`
 - What was done: Rebuilt order history with a CfNavy top app bar, CfSurface background, white order cards, order date/total details, status badges, chevron detail affordance, and icon empty state.
 - Issues found: None.
+
+## Order detail redesign
+- Files changed: `app/src/main/java/com/neverno/neverq/customer/orders/OrderDetailScreen.kt`
+- What was done: Rebuilt order detail with a CfNavy top app bar, colored status card, white items card, and payment summary card for subtotal, wallet used, coupon discount, and total.
+- Issues found: None.
