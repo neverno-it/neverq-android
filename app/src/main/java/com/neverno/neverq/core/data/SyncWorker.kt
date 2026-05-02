@@ -16,7 +16,7 @@ import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
 
 @HiltWorker
-class StaffSyncWorker @AssistedInject constructor(
+class SyncWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val api: ApiService,
@@ -81,7 +81,7 @@ class StaffSyncWorker @AssistedInject constructor(
 
         fun schedule(context: Context, userType: String, role: String) {
             val data = workDataOf("user_type" to userType, "role" to role)
-            val request = PeriodicWorkRequestBuilder<StaffSyncWorker>(5, TimeUnit.MINUTES)
+            val request = PeriodicWorkRequestBuilder<SyncWorker>(5, TimeUnit.MINUTES)
                 .setInputData(data)
                 .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
                 .build()
